@@ -16,11 +16,19 @@ import const
 
 
 
-#extract the data from csv
-const.M_names, const.F_names, const.name_map = dataParser.get_data()
+# extract the data from csv
+# const.M_names, const.F_names, const.name_map = dataParser.get_data()
+dataParser.get_data("text_samples/english.txt", const.english_words, const.word_map, 0)
+dataParser.get_data("text_samples/french.txt", const.french_words, const.word_map, 1)
+duplicates = [x for x in const.english_words if x in const.french_words]
+const.english_words = [x for x in const.english_words if x not in duplicates]
+const.french_words = [x for x in const.french_words if x not in duplicates]
+for i in duplicates:
+    if const.word_map.get(i):
+        del const.word_map[i]
 #extract the training/test sets
 const.ngram_training_set = extract(config.data_extraction_size)
-const.training_set = extract(config.training_size, labelled=True)
+const.training_set = extract(config.training_set_size, labelled=True)
 const.cv_set = extract(config.cv_set_size, labelled=True)
 const.test_set = extract(config.test_set_size, labelled=True)
 #determine most common ngrams
@@ -67,28 +75,28 @@ class Model(nn.Module):
 model = Model()
 cost = torch.nn.BCELoss(reduction='mean')
 optimizer = torch.optim.SGD(model.parameters(), lr=config.learning_rate)
-epochs = int(config.iterations / config.training_size * config.minibatch)
+epochs = int(config.iterations / config.training_set_size * config.minibatch)
 
 iterations = 0
 for i in range(epochs):
-    for names, genders in training_loader:
-        names = names.view(-1, const.featureCount).requires_grad_()
+    for words, languages in training_loader:
+        words = words.view(-1, const.featureCount).requires_grad_()
         optimizer.zero_grad()
-        hypothesis = torch.sigmoid(model(names.float()))
-        loss = cost(hypothesis.reshape(config.minibatch), genders.float())
+        hypothesis = torch.sigmoid(model(words.float()))
+        loss = cost(hypothesis.reshape(config.minibatch), languages.float())
         loss.backward()
         optimizer.step()
         iterations += 1
-        if not iterations % 500:
+        if not iterations % config.print_interval:
            for num, set in enumerate([cv_loader, test_loader]):
                 correct = 0
                 total = 0
-                for name, gender in set:
-                    name = name.view(-1, const.featureCount).requires_grad_()
-                    pred = torch.sigmoid(model(name.float()))
+                for word, language in set:
+                    word = word.view(-1, const.featureCount).requires_grad_()
+                    pred = torch.sigmoid(model(word.float()))
 
-                    total += gender.size(0)
-                    correct += ((pred.reshape(config.minibatch)-gender.reshape(config.minibatch)).abs_() < 0.5).sum()
+                    total += language.size(0)
+                    correct += ((pred.reshape(config.minibatch)-language.reshape(config.minibatch)).abs_() < 0.5).sum()
 
                 accuracy = 100 * correct.item() / total
                 type = "Test" if num else "CV"
@@ -96,32 +104,32 @@ for i in range(epochs):
             # print("")
 
 if config.IS_DEBUG:
-    for name, param in model.named_parameters():
+    for word, param in model.named_parameters():
         if param.requires_grad and config.IS_DEBUG:
-            print(name)
+            print(word)
             weights = param.data
-            for name, weight in zip(const.featureList, weights[0]):
-                print(f"[{name}] -> {weight}")
+            for feature, weight in zip(const.featureList, weights[0]):
+                print(f"[{feature}] -> {weight}")
             config.IS_DEBUG = False
-#now we can test custom name data
 
-name_map_custom = dataParser.get_custom_data()
+#now we can test custom data
+if config.IS_CUSTOM:
+    word_map_custom = dataParser.get_custom_data()
 
-X_custom, y_custom = extractFeatures(name_map_custom)
+    X_custom, y_custom = extractFeatures(word_map_custom)
 
-X_custom_tensor = torch.stack([torch.tensor(i) for i in X_custom])
-y_custom_tensor = torch.from_numpy(y_custom)
+    X_custom_tensor = torch.stack([torch.tensor(i) for i in X_custom])
+    y_custom_tensor = torch.from_numpy(y_custom)
 
-custom_set = data.TensorDataset(X_custom_tensor, y_custom_tensor)
-custom_loader = data.DataLoader(custom_set, batch_size=config.minibatch)
+    custom_set = data.TensorDataset(X_custom_tensor, y_custom_tensor)
+    custom_loader = data.DataLoader(custom_set, batch_size=config.minibatch)
 
 
+    for word, language in custom_loader:
+        name = name.view(-1, const.featureCount).requires_grad_()
+        pred = torch.sigmoid(model(name.float()))
 
-for name, gender in custom_loader:
-    name = name.view(-1, const.featureCount).requires_grad_()
-    pred = torch.sigmoid(model(name.float()))
-
-    c_total = gender.size(0)
-    predictions = (pred.reshape(len(name_map_custom)) - gender.reshape(len(name_map_custom))).abs_() < 0.5
-    for index, name in enumerate(name_map_custom.keys()):
-        print('Name: {}. Gender: {}. Prediction: {}'.format(name, "M" if gender[index].item() else "F", "M" if predictions[index].item() else "F"))
+        c_total = language.size(0)
+        predictions = (pred.reshape(len(word_map_custom)) - language.reshape(len(word_map_custom))).abs_() < 0.5
+        for index, name in enumerate(word_map_custom.keys()):
+            print('Word: {}. Language: {}. Prediction: {}'.format(name, "FRE" if language[index].item() else "ENG", "FRE" if predictions[index].item() else "ENG"))

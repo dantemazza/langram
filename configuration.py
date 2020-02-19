@@ -1,17 +1,15 @@
-import dataParser as data
 
 
-starting_year = 1990
-data_extraction_size = 20000
-training_size = 10000
-cv_set_size = 2000
+data_extraction_size = 5000
+training_set_size = 6000
+cv_set_size = 1000
 test_set_size = 2000
 
 
-#---gram features---#
+#---ngram features---#
 
-di_num = 100
-tri_num = 100
+di_num = 500
+tri_num = 500
 
 
 #---suffixes---#
@@ -24,6 +22,10 @@ tri_sufnum = 50
 #---optim variables---#
 iterations = 20000
 learning_rate = 0.001
-minibatch = 100
+minibatch = 50
 
-IS_DEBUG = True
+custom_test_set = "test_cases/test_names1.csv"
+
+print_interval = 500
+IS_DEBUG = False
+IS_CUSTOM = False

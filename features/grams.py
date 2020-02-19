@@ -4,6 +4,7 @@ from collections import Counter
 import configuration as config
 import const
 
+#ngram extraction
 def getCommonGrams(words):
     bigrams = {}
     trigrams = {}

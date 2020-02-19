@@ -10,7 +10,7 @@ def extractFeatures(set):
     for i, name in enumerate(set):
         fn = 0
         for letter in const.last_letters:
-            X[i][fn] = 100 if name[-1] == letter else 0
+            X[i][fn] = 10 if name[-1] == letter else 0
             fn += 1
             const.featureList.append(f"Last letter of: {letter}")
         for gram in const.bigrams + const.trigrams:

@@ -39,5 +39,5 @@ The program flow is dictated in launch.py. Run this file to train the model.
 
 ### Acnowledgements
 * The pytorch model is loosely based off of [this](https://www.deeplearningwizard.com/deep_learning/practical_pytorch/pytorch_logistic_regression/) logistic regression classifier from Deep Learning Wizard
-* Training, CV, and test sets all extracted randomly using the 10000 most common occurrences on wikipedia per language
+* Training, CV, and test sets all extracted randomly using the 10000 most common words on Wikipedia per language
 

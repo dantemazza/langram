@@ -4,7 +4,7 @@
 This supervised learning model predicts the language of text samples using ngram frequency analysis. The objective of this project was to see if we could make a cheap and accurate prediction on the language using a limited range of morphological features. This includes:
 * n-gram combinations (i.e. "an", "ine", "hew")
 * suffixes (including last-letters)<br />
-For example, if a name has the suffix "que", this usually points to French. The goal was to get the model to recognize thisand make language predictions in a more efficient/innovative way than using an exhaustive search through a dictionary.
+For example, if a name has the suffix "que", this usually points to French. The goal was to get the model to recognize this and make language predictions in a more efficient/innovative way than using an exhaustive search through a dictionary.
 
 
 ## Program flow
